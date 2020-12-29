@@ -21,10 +21,6 @@ function calculateWinner(squares: string[]): string | null {
   return null;
 }
 
-type Move = {
-  squares: string[],
-}
-
 export function Game() {
   const [gameState, setGameState] = useState({
     history: [{
@@ -42,26 +38,24 @@ export function Game() {
     });
   }
 
-  function handleClick(i: number) {
-    const history = [...gameState.history];
-    const current = history[history.length - 1];
-    const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
+  function placeSymbol(i: number) {
+    const {history} = gameState;
+    const lastMove = history[history.length - 1].squares.slice();
+    if (calculateWinner(lastMove) || lastMove[i] !== null) {
       return;
     }
-    squares[i] = gameState.xIsNext ? 'X' : 'O';
+    const nextMove = [...lastMove];
+    nextMove[i] = gameState.xIsNext ? 'X' : 'O';
     setGameState({
       xIsNext: !gameState.xIsNext,
       stepNumber: gameState.stepNumber + 1,
-      history: gameState.history.concat([{squares}])
+      history: gameState.history.concat([{squares: nextMove}])
     })
   }
   
-  const history = gameState.history;
-  const current = history[gameState.stepNumber];
-  const winner = calculateWinner(current.squares);
-
-  const moves = gameState.history.map((step: Move, idx: number) => {
+  const {history} = gameState;
+  const {squares} = history[gameState.stepNumber];
+  const moves = gameState.history.map((step: {squares: string[]}, idx: number) => {
     const desc = idx ? `Go to move #${idx}` : 'Go to game start';
     return (
       <li key={idx}>
@@ -70,19 +64,15 @@ export function Game() {
     );
   });
 
-  let status;
-  if (winner) {
-    status = "Winner: " + winner;
-  } else {
-    status = "Next player: " + (gameState.xIsNext ? "X" : "O");
-  }
+  const winner = calculateWinner(squares);
+  const status = winner ? `Winner: ${winner}` : `Next player: ${gameState.xIsNext ? 'X' : 'O'}`;
 
   return (
     <div className="game">
       <div className="game-board">
         <Board
-          squares={current.squares}
-          onClick={(i) => handleClick(i)}
+          squares={squares}
+          onClick={(i) => placeSymbol(i)}
         />
       </div>
       <div className="game-info">
