@@ -1,5 +1,23 @@
 import React, {useState} from 'react';
+import styled from 'styled-components';
 import {Board} from './Board';
+
+const StyledGame = styled.article`
+  display: flex;
+  flex-direction: row;
+`;
+
+const GameInfo = styled.div`
+  margin-left: 20px;
+`;
+
+const MovesList = styled.ul`
+  padding-left: 30px;
+`;
+
+const Status = styled.div`
+  margin-bottom: 10px;
+`;
 
 function calculateWinner(squares: string[]): string | null {
   const lines = [
@@ -55,7 +73,7 @@ export function Game() {
   
   const {history} = gameState;
   const {squares} = history[gameState.stepNumber];
-  const moves = gameState.history.map((step: {squares: string[]}, idx: number) => {
+  const movesList = gameState.history.map((step: {squares: string[]}, idx: number) => {
     const desc = idx ? `Go to move #${idx}` : 'Go to game start';
     return (
       <li key={idx}>
@@ -65,20 +83,15 @@ export function Game() {
   });
 
   const winner = calculateWinner(squares);
-  const status = winner ? `Winner: ${winner}` : `Next player: ${gameState.xIsNext ? 'X' : 'O'}`;
+  const statusText = winner ? `Winner: ${winner}` : `Next player: ${gameState.xIsNext ? 'X' : 'O'}`;
 
   return (
-    <div className="game">
-      <div className="game-board">
-        <Board
-          squares={squares}
-          onClick={(i) => placeSymbol(i)}
-        />
-      </div>
-      <div className="game-info">
-        <div>{status}</div>
-        <ol>{moves}</ol>
-      </div>
-    </div>
+    <StyledGame>
+      <Board squares={squares} onClick={(i) => placeSymbol(i)} />
+      <GameInfo>
+        <Status>{statusText}</Status>
+        <MovesList>{movesList}</MovesList>
+      </GameInfo>
+    </StyledGame>
   );
 }
