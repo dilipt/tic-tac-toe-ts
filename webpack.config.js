@@ -26,16 +26,14 @@ module.exports = {
   },
   output: {
     path: `${__dirname}/dist`,
-    filename: 'bundle.[hash].js',
+    filename: 'bundle.[fullhash].js',
   },
   devServer: {
-    contentBase: './dist',
     port: 3000,
     hot: true,
     historyApiFallback: true,
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',

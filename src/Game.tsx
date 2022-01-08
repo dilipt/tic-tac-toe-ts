@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import {Board} from './Board';
+import { Board } from './Board';
+import { MovesList } from './MovesList';
 
 const StyledGame = styled.article`
   display: flex;
@@ -9,10 +10,6 @@ const StyledGame = styled.article`
 
 const GameInfo = styled.div`
   margin-left: 20px;
-`;
-
-const MovesList = styled.ul`
-  padding-left: 30px;
 `;
 
 const Status = styled.div`
@@ -28,9 +25,9 @@ function calculateWinner(squares: string[]): string | null {
     [1, 4, 7],
     [2, 5, 8],
     [0, 4, 8],
-    [2, 4, 6]
+    [2, 4, 6],
   ];
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 0; i < lines.length; i += 1) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
@@ -39,58 +36,66 @@ function calculateWinner(squares: string[]): string | null {
   return null;
 }
 
+type GameStep = {
+  squares: string[],
+};
+
+type GameState = {
+  history: GameStep[],
+  stepNumber: number,
+  xIsNext: boolean,
+};
+
 export function Game() {
-  const [gameState, setGameState] = useState({
+  const [statusText, setStatusText] = useState<string>('');
+  const [gameState, setGameState] = useState<GameState>({
     history: [{
-      squares: Array(9).fill(null),
+      squares: Array<string>(9).fill(''),
     }],
     stepNumber: 0,
     xIsNext: true,
   });
 
-  function jumpTo(step: number) {
+  useEffect(() => {
+    const { squares } = gameState.history[gameState.stepNumber];
+    const winner = calculateWinner(squares);
+    if (winner) {
+      setStatusText(`Winner: ${winner}`);
+    } else {
+      setStatusText(`Next player: ${gameState.xIsNext ? 'X' : 'O'}`);
+    }
+  }, [gameState]);
+
+  const jumpTo = (step: number) => {
     setGameState({
+      ...gameState,
       xIsNext: (step % 2) === 0,
       stepNumber: step,
-      history: [...gameState.history],
     });
-  }
+  };
 
-  function placeSymbol(i: number) {
-    const {history} = gameState;
+  const placeSymbol = (squareIdx: number) => {
+    const { history } = gameState;
     const lastMove = history[history.length - 1].squares.slice();
-    if (calculateWinner(lastMove) || lastMove[i] !== null) {
+    if (calculateWinner(lastMove) || lastMove[squareIdx] !== '') {
       return;
     }
     const nextMove = [...lastMove];
-    nextMove[i] = gameState.xIsNext ? 'X' : 'O';
+    nextMove[squareIdx] = gameState.xIsNext ? 'X' : 'O';
     setGameState({
       xIsNext: !gameState.xIsNext,
       stepNumber: gameState.stepNumber + 1,
-      history: gameState.history.concat([{squares: nextMove}])
-    })
-  }
-  
-  const {history} = gameState;
-  const {squares} = history[gameState.stepNumber];
-  const movesList = gameState.history.map((step: {squares: string[]}, idx: number) => {
-    const desc = idx ? `Go to move #${idx}` : 'Go to game start';
-    return (
-      <li key={idx}>
-        <button onClick={() => jumpTo(idx)}>{desc}</button>
-      </li>
-    );
-  });
+      history: gameState.history.concat([{ squares: nextMove }]),
+    });
+  };
 
-  const winner = calculateWinner(squares);
-  const statusText = winner ? `Winner: ${winner}` : `Next player: ${gameState.xIsNext ? 'X' : 'O'}`;
-
+  const { squares } = gameState.history[gameState.stepNumber];
   return (
     <StyledGame>
       <Board squares={squares} onClick={(i) => placeSymbol(i)} />
       <GameInfo>
         <Status>{statusText}</Status>
-        <MovesList>{movesList}</MovesList>
+        <MovesList movesList={gameState.history} clickHandler={jumpTo} />
       </GameInfo>
     </StyledGame>
   );

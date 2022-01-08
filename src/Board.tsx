@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import {Square} from './Square';
+import { Square } from './Square';
 
 const BoardRow = styled.div`
   &:after {
@@ -13,9 +13,9 @@ const BoardRow = styled.div`
 type BoardProps = {
   squares: string[],
   onClick: (i: number) => void,
-}
+};
 
-export function Board({squares, onClick}: BoardProps) {
+export function Board({ squares, onClick }: BoardProps) {
   function renderSquare(i: number) {
     return (
       <Square
